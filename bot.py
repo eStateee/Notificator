@@ -10,7 +10,7 @@ from handlers.common import register_handlers_common
 from handlers.add_task import register_handlers_task_add
 from handlers.test import register_handlers_food
 
-API_TOKEN = "6910997709:AAFjjwVZHSO6jwmtwH-Fvt2rLZqIY8sGyXY"
+API_TOKEN = ""
 
 # тестовая БД
 storage = MemoryStorage()
