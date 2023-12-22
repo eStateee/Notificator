@@ -8,7 +8,7 @@ from aiogram.types.bot_command import BotCommand
 from config import COMMANDS
 from handlers.common import register_handlers_common
 from handlers.add_task import register_handlers_task_add
-from handlers.test import register_handlers_food
+from handlers.settings import register_handlers_settings
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -36,10 +36,10 @@ async def on_startup(dp):
         level=logging.INFO,
         format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
     )
-    # регистрация обработчиков для команд
+    # регистрация обработчиков
     register_handlers_common(dp)
     register_handlers_task_add(dp)
-    register_handlers_food(dp)
+    register_handlers_settings(dp)
     # установка команд в меню тг бота
     await set_commands(dp)
 
