@@ -9,8 +9,10 @@ from config import COMMANDS
 from handlers.common import register_handlers_common
 from handlers.add_task import register_handlers_task_add
 from handlers.test import register_handlers_food
-
-API_TOKEN = ""
+import os
+from dotenv import load_dotenv
+load_dotenv()
+API_TOKEN = os.getenv("TOKEN")
 
 # тестовая БД
 storage = MemoryStorage()
