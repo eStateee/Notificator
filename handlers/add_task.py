@@ -3,6 +3,8 @@ from aiogram.dispatcher.filters.state import StatesGroup, State
 from aiogram.types import Message
 from aiogram import Dispatcher
 
+from db.models import Task
+
 
 class TaskForm(StatesGroup):
     title = State()
@@ -21,11 +23,15 @@ async def task_description(message: Message, state: FSMContext):
     await state.set_state(TaskForm.description.state)
 
 
-async def task_finish(message: Message, state: FSMContext):
+async def task_finish(message: Message, state: FSMContext, session):
     await state.update_data(description=message.text.lower())
     data = await state.get_data()
     await message.answer(f'Название таски - {data["title"]}\nОписание таски - {data["description"]}')
-    # TODO тут надо записывать в БД, потому что после state.finish, получить данные НЕЛЬЗЯ
+
+    async with session() as session:
+        session.add(Task(user_id=message.from_user.id, title=data['title'], description=data["description"]))
+        await session.commit()
+        await message.answer("Данные записаны ")
     await state.finish()
 
 

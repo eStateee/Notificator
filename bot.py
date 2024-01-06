@@ -1,16 +1,21 @@
 import logging
 
-from aiogram import Bot, Dispatcher, types, executor
+from aiogram import Bot, Dispatcher, executor
 
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.types.bot_command import BotCommand
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
 from config import COMMANDS
+
 from handlers.common import register_handlers_common
 from handlers.add_task import register_handlers_task_add
-from handlers.settings import register_handlers_settings
+from handlers.user_settings import register_handlers_settings
 import os
 from dotenv import load_dotenv
+from db.models import init_database, Task, drop_database
+from middlewares.db import DbSessionMiddleware
+
 load_dotenv()
 API_TOKEN = os.getenv("TOKEN")
 
@@ -29,13 +34,26 @@ async def set_commands(dp):
         commands.append(BotCommand(command=f'/{i[0]}', description=i[1]))
     await dp.bot.set_my_commands(commands)
 
-# Ф-ция при запуске бота
-async def on_startup(dp):
 
+# Ф-ция при запуске бота
+
+async def on_startup(dp):
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
     )
+    engine = create_async_engine(url=os.getenv('DB_URL'), echo=True)
+    # TODO тут для теста каждый раз дропаются все таблицы
+    # await drop_database(engine)
+    await init_database(engine)
+
+    async_session = async_sessionmaker(
+        engine, expire_on_commit=False,
+    )
+    dp.middleware.setup(DbSessionMiddleware(session_pool=async_session))
+
+
+
     # регистрация обработчиков
     register_handlers_common(dp)
     register_handlers_task_add(dp)
