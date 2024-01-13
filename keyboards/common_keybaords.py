@@ -12,3 +12,9 @@ def get_main_keyboard():
         btn_list.append(KeyboardButton(f'/{i[0]}'))
     main_keyboard.row(*btn_list)
     return main_keyboard
+
+
+def get_register_inline_keyboard():
+    register_keyboard = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True).row(
+        KeyboardButton('/register'))
+    return register_keyboard

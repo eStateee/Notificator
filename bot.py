@@ -1,25 +1,26 @@
 import logging
+import os
+from dotenv import load_dotenv
 
 from aiogram import Bot, Dispatcher, executor
-
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.types.bot_command import BotCommand
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
-from config import COMMANDS
-
 from handlers.common import register_handlers_common
 from handlers.add_task import register_handlers_task_add
+from handlers.get_tasks import register_handlers_get_tasks
 from handlers.user_settings import register_handlers_settings
-import os
-from dotenv import load_dotenv
-from db.models import init_database, Task, drop_database
+
+from config import COMMANDS
+
+from db.models import init_database, drop_database
 from middlewares.db import DbSessionMiddleware
 
 load_dotenv()
 API_TOKEN = os.getenv("TOKEN")
 
-# тестовая БД
+# TODO возможно можно убрать
 storage = MemoryStorage()
 
 bot = Bot(token=API_TOKEN)
@@ -36,7 +37,6 @@ async def set_commands(dp):
 
 
 # Ф-ция при запуске бота
-
 async def on_startup(dp):
     logging.basicConfig(
         level=logging.INFO,
@@ -52,12 +52,11 @@ async def on_startup(dp):
     )
     dp.middleware.setup(DbSessionMiddleware(session_pool=async_session))
 
-
-
     # регистрация обработчиков
     register_handlers_common(dp)
     register_handlers_task_add(dp)
     register_handlers_settings(dp)
+    register_handlers_get_tasks(dp)
     # установка команд в меню тг бота
     await set_commands(dp)
 

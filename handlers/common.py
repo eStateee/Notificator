@@ -1,14 +1,12 @@
 from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters.state import StatesGroup, State
 from aiogram.types import Message, ReplyKeyboardRemove
-from keyboards.main_keybaord import get_main_keyboard
+
+from keyboards.common_keybaords import get_register_inline_keyboard
 
 
-
-async def start(message: Message, state: FSMContext, session):
+async def start(message: Message, state: FSMContext):
     await state.finish()
-    #TODO добавить автоматическую регистрацию пользователя
-    await message.answer("Дарова епта бандиты !)))!№!№)", reply_markup=get_main_keyboard())
+    await message.answer(f'Очень угарное приветствие реяльно). Но тебе надо пройти регистрацию', reply_markup=get_register_inline_keyboard())
 
 
 async def cancel(message: Message, state: FSMContext):
@@ -18,5 +16,5 @@ async def cancel(message: Message, state: FSMContext):
 
 # общая ф-ция для регистрации всех common обработчиков
 def register_handlers_common(dp):
-    dp.register_message_handler(start, commands="start", state="*",)
+    dp.register_message_handler(start, commands="start", state="*", )
     dp.register_message_handler(cancel, commands="cancel", state="*")
