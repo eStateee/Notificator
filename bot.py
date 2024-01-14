@@ -10,12 +10,15 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from handlers.common import register_handlers_common
 from handlers.add_task import register_handlers_task_add
 from handlers.get_tasks import register_handlers_get_tasks
+from handlers.remove_task import register_handlers_remove_tasks
 from handlers.user_settings import register_handlers_settings
+
 
 from config import COMMANDS
 
 from db.models import init_database, drop_database
 from middlewares.db import DbSessionMiddleware
+
 
 load_dotenv()
 API_TOKEN = os.getenv("TOKEN")
@@ -44,7 +47,7 @@ async def on_startup(dp):
     )
     engine = create_async_engine(url=os.getenv('DB_URL'), echo=True)
     # TODO тут для теста каждый раз дропаются все таблицы
-    # await drop_database(engine)
+    await drop_database(engine)
     await init_database(engine)
 
     async_session = async_sessionmaker(
@@ -57,8 +60,10 @@ async def on_startup(dp):
     register_handlers_task_add(dp)
     register_handlers_settings(dp)
     register_handlers_get_tasks(dp)
+    register_handlers_remove_tasks(dp)
     # установка команд в меню тг бота
     await set_commands(dp)
+
 
 
 if __name__ == '__main__':
