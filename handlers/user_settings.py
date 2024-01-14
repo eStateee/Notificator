@@ -1,20 +1,14 @@
-from datetime import datetime, timedelta
 
 import pytz
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import StatesGroup, State
 from aiogram.types import Message
 from magic_filter import F
-
 from pytz import UnknownTimeZoneError
-from sqlalchemy import select
-
-from db.models import User, Task
+from db.models import User
 from keyboards.common_keybaords import get_main_keyboard
 import re
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-
-from services.notify_user import notify
+from services.schedule_services import setup_and_start_schedule
 
 
 class SettingsForm(StatesGroup):
@@ -28,7 +22,7 @@ async def start_register_user(callback, state: FSMContext):
     await state.set_state(SettingsForm.timezone.state)
 
 
-async def set_user_timezone(message: Message, state: FSMContext, session):
+async def set_user_timezone(message: Message, state: FSMContext):
     user_input = message.text.strip()
     try:
         pytz.timezone(user_input)
@@ -55,15 +49,9 @@ async def set_user_alarm_time(message: Message, state: FSMContext, session):
     async with session() as s:
         s.add(User(id=message.from_user.id, timezone=data['timezone'], alarm_time=data['alarm_time']))
         await s.commit()
-    scheduler = AsyncIOScheduler(timezone=data['timezone'])
-    scheduler.add_job(notify, trigger='cron', hour=data['alarm_time'].split(":")[0],
-                      minute=data['alarm_time'].split(":")[1],
-                      start_date=datetime.now(tz=pytz.timezone(data['timezone'])),
-                      kwargs={'message': message, 'session': session})
-
-    scheduler.start()
+    setup_and_start_schedule(timezone=data['timezone'],alarm_time=data['alarm_time'], session=session, message=message)
     await state.finish()
-    await message.answer('Все молодец иди нахуй без негатива) ')
+    await message.answer('Все молодец иди нахуй без негатива) ', reply_markup=get_main_keyboard())
 
 
 def register_handlers_settings(dp):

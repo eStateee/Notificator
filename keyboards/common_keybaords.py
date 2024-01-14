@@ -17,6 +17,4 @@ def get_main_keyboard():
 def get_register_inline_keyboard():
     register_keyboard = types.InlineKeyboardMarkup()
     register_keyboard.add(InlineKeyboardButton(text='Зарегистрироваться', callback_data='register'))
-    # register_keyboard = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True).row(
-    #     KeyboardButton('/register'))
     return register_keyboard
