@@ -14,5 +14,6 @@ async def get_all_user_tasks(message: Message, session):
     for i in user_tasks:
         await message.answer(f'Название: {i.title}\nОписание: {i.description}\n\n')
 
+
 def register_handlers_get_tasks(dp):
     dp.register_message_handler(get_all_user_tasks, commands="list", state="*", )

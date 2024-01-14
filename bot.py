@@ -47,7 +47,7 @@ async def on_startup(dp):
     )
     engine = create_async_engine(url=os.getenv('DB_URL'), echo=True)
     # TODO тут для теста каждый раз дропаются все таблицы
-    await drop_database(engine)
+    # await drop_database(engine)
     await init_database(engine)
 
     async_session = async_sessionmaker(

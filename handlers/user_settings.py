@@ -4,6 +4,8 @@ import pytz
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import StatesGroup, State
 from aiogram.types import Message
+from magic_filter import F
+
 from pytz import UnknownTimeZoneError
 from sqlalchemy import select
 
@@ -20,8 +22,9 @@ class SettingsForm(StatesGroup):
     alarm_time = State()
 
 
-async def start_register_user(message: Message, state: FSMContext, session):
-    await message.answer('бла бла бла. Введи свое местоположение в виде: America/New_York, вместо пробела знак "_"')
+async def start_register_user(callback, state: FSMContext):
+    await callback.message.answer(
+        'бла бла бла. Введи свое местоположение в виде: America/New_York, вместо пробела знак "_"')
     await state.set_state(SettingsForm.timezone.state)
 
 
@@ -64,6 +67,6 @@ async def set_user_alarm_time(message: Message, state: FSMContext, session):
 
 
 def register_handlers_settings(dp):
-    dp.register_message_handler(start_register_user, commands='register', state="*")
     dp.register_message_handler(set_user_timezone, state=SettingsForm.timezone)
     dp.register_message_handler(set_user_alarm_time, state=SettingsForm.alarm_time)
+    dp.register_callback_query_handler(start_register_user, F.data == 'register')
