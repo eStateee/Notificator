@@ -7,17 +7,21 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.types.bot_command import BotCommand
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
+
 from handlers.common import register_handlers_common
+
 from handlers.add_task import register_handlers_task_add
 from handlers.get_tasks import register_handlers_get_tasks
 from handlers.remove_task import register_handlers_remove_tasks
 from handlers.user_settings import register_handlers_settings
 
-
 from config import COMMANDS
 
 from db.models import init_database, drop_database
 from middlewares.db import DbSessionMiddleware
+from middlewares.schedule import ScheduleMiddleware
+
+from services.schedule_services import Schedule
 
 
 load_dotenv()
@@ -54,6 +58,7 @@ async def on_startup(dp):
         engine, expire_on_commit=False,
     )
     dp.middleware.setup(DbSessionMiddleware(session_pool=async_session))
+    dp.middleware.setup(ScheduleMiddleware())
 
     # регистрация обработчиков
     register_handlers_common(dp)
@@ -65,6 +70,6 @@ async def on_startup(dp):
     await set_commands(dp)
 
 
-
 if __name__ == '__main__':
+    user_schedule = Schedule()
     executor.start_polling(dp, on_startup=on_startup, skip_updates=True)

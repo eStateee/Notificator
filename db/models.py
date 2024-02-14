@@ -18,7 +18,6 @@ class Task(Base):
     user_id = Column(Integer, ForeignKey(User.id))
     user = relationship('User', back_populates='tasks')
     title = Column(String, default='', nullable=False)
-    description = Column(String, default='')
     
 
 
