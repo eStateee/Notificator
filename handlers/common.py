@@ -1,24 +1,18 @@
 from aiogram.dispatcher import FSMContext
 from aiogram.types import Message, ReplyKeyboardRemove
-from sqlalchemy import select
-from db.models import User
 from keyboards.common_keybaords import get_register_inline_keyboard
+from services.user_service import get_user_by_id
 
-async def start(message: Message, state: FSMContext, session, schedule):
+
+async def start(message: Message, state: FSMContext, session):
     await state.finish()
-    async with session() as s:
-        query = await s.execute(select(User).filter_by(id=message.from_user.id))
-        user = query.scalar()
-        if not user:
-            await message.answer(f'Очень угарное приветствие реяльно). Но тебе надо пройти регистрацию',
-                                 reply_markup=get_register_inline_keyboard())
-        else:
-            await message.answer('Ебать так ты зарегестрирован. Ну если не не работают уведомления щас починим')
-            async with session() as s:
-                query = await s.execute(select(User).filter_by(id=message.from_user.id))
-                user = query.scalar()
-            schedule.set_user_settings(timezone=user.timezone, user_id=user.id)
-            schedule.setup_and_start_schedule(alarm_time=user.alarm_time, session=session, message=message)
+    user = await get_user_by_id(user_id=message.from_user.id, session=session)
+    if not user:
+        await message.answer(f'Привет, что бы пользоваться ботом тебе необходимо пройти регистрацию',
+                             reply_markup=get_register_inline_keyboard())
+    else:
+        await message.answer('Привет:)')
+
 
 async def cancel(message: Message, state: FSMContext):
     await state.finish()

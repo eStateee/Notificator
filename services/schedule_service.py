@@ -1,8 +1,7 @@
 from datetime import datetime
-
 import pytz
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from services.notify_user import notify
+from handlers.get_tasks import get_all_user_tasks
 
 
 class Schedule:
@@ -23,7 +22,7 @@ class Schedule:
         hour = alarm_time.split(":")[0]
         minute = alarm_time.split(":")[1]
 
-        self.scheduler.add_job(notify, trigger='cron', hour=hour,
+        self.scheduler.add_job(get_all_user_tasks, trigger='cron', hour=hour,
                                minute=minute, id=str(self.user_id),
                                start_date=datetime.now(tz=pytz.timezone(self.timezone)),
                                kwargs={'message': message, 'session': session})

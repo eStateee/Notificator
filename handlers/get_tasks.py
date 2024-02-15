@@ -1,18 +1,14 @@
-from aiogram.dispatcher import FSMContext
 from aiogram.types import Message
-from sqlalchemy import select
-
-from db.models import Task
+from services.task_service import get_user_task_list
 
 
 async def get_all_user_tasks(message: Message, session):
-    async with session() as session:
-        sql = select(Task.title).filter_by(user_id=message.from_user.id)
-        user_tasks = await session.execute(sql)
-        user_tasks = user_tasks.fetchall()
-    await message.answer('Ваши таски:')
+    user_tasks = await get_user_task_list(user_id=message.from_user.id, session = session)
+    await message.answer('Ваши задачи:')
+    response = ''
     for i in user_tasks:
-        await message.answer(f'Название: {i.title}\n\n')
+        response += f'{i.title}\n\n'
+    await message.answer(response)
 
 
 def register_handlers_get_tasks(dp):

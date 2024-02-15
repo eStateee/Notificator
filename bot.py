@@ -21,13 +21,12 @@ from db.models import init_database, drop_database
 from middlewares.db import DbSessionMiddleware
 from middlewares.schedule import ScheduleMiddleware
 
-from services.schedule_services import Schedule
+from services.schedule_service import Schedule
 
 
 load_dotenv()
 API_TOKEN = os.getenv("TOKEN")
 
-# TODO возможно можно убрать
 storage = MemoryStorage()
 
 bot = Bot(token=API_TOKEN)

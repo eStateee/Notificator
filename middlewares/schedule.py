@@ -1,7 +1,7 @@
 
 from aiogram.dispatcher.middlewares import BaseMiddleware
 
-from services.schedule_services import Schedule
+from services.schedule_service import Schedule
 
 
 class ScheduleMiddleware(BaseMiddleware):
