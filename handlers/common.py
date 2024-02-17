@@ -1,10 +1,11 @@
 from aiogram.dispatcher import FSMContext
 from aiogram.types import Message, ReplyKeyboardRemove
-from keyboards.common_keybaords import get_register_inline_keyboard
+from keyboards.common_keybaords import get_register_inline_keyboard, location_kb
 from services.user_service import get_user_by_id
 from config import COMMANDS
 from keyboards.common_keybaords import get_main_keyboard
 
+from aiogram.types import ReplyKeyboardMarkup
 
 async def start(message: Message, state: FSMContext, session):
     await state.finish()
