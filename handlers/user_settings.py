@@ -21,13 +21,13 @@ class UpdateSettingForm(StatesGroup):
     check_user = State()
 
 
-async def start_register_user(callback, state: FSMContext):
+async def start_register_user(callback):
     await callback.message.answer(
         "Привет, что бы начать проходить регистрацию мне надо узнать каким устройством ты сейчас пользуешься",
         reply_markup=device_type_kb())
 
 
-async def handle_mobile_timezone(callback, state: FSMContext):
+async def handle_mobile_timezone(callback):
     await callback.message.answer(
         "Отлично! Что бы продолжить мне нужно узнать твой часовой пояс",
         reply_markup=location_kb(),
@@ -104,20 +104,23 @@ async def update_user_alarm_time(message: Message, session, schedule, state: FSM
     data = await state.get_data()
     user = await get_user_by_id(user_id=message.from_user.id, session=session)
     try:
-        # TODO все равно в БД меняется время уведомления несмотря на транзакции
-        await update_user_alarm_time_by_id(user_id=message.from_user.id, alarm_time=data['alarm_time'], session=session)
+
         schedule.set_user_settings(timezone=user.timezone, user_id=user.id)
         schedule.update_user_schedule(data['alarm_time'])
-        await message.answer('Время успешно изменено')
+        await update_user_alarm_time_by_id(user_id=message.from_user.id, alarm_time=data['alarm_time'], session=session)
+
         transaction.commit()
     except JobLookupError:
-        await message.answer("Произошла ошибка, попробуй команду /repair и затем повтори попытку")
+
+        schedule.setup_and_start_schedule(alarm_time=data['alarm_time'], session=session, message=message)
+        await update_user_alarm_time_by_id(user_id=message.from_user.id, alarm_time=data['alarm_time'], session=session)
+
         transaction.abort()
     finally:
+        await message.answer('Время успешно изменено')
         await state.finish()
 
 
-# TODO временный вариант
 async def repair_schedule(message, schedule, session):
     user = await get_user_by_id(user_id=message.from_user.id, session=session)
     schedule.setup_and_start_schedule(alarm_time=user.alarm_time, session=session, message=message)
