@@ -23,3 +23,9 @@ def check_user_input_time(time):
     if not pattern.match(time):
         return False
     return True
+
+async def get_all_users(session):
+    async with session() as s:
+        query = await s.execute(select(User.id, User.timezone, User.alarm_time))
+        users = query.fetchall()
+    return users

@@ -19,9 +19,7 @@ from config import COMMANDS
 
 from db.models import init_database, drop_database
 from middlewares.db import DbSessionMiddleware
-from middlewares.schedule import ScheduleMiddleware
-
-from services.schedule_service import Schedule
+from middlewares.bot import BotMiddleware
 
 
 load_dotenv()
@@ -32,7 +30,6 @@ storage = MemoryStorage()
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot, storage=storage)
 logger = logging.getLogger(__name__)
-
 
 # Регистрация команд для отображения в меню телеграмма
 async def set_commands(dp):
@@ -56,8 +53,9 @@ async def on_startup(dp):
     async_session = async_sessionmaker(
         engine, expire_on_commit=False,
     )
+
     dp.middleware.setup(DbSessionMiddleware(session_pool=async_session))
-    dp.middleware.setup(ScheduleMiddleware())
+    dp.middleware.setup(BotMiddleware(bot=bot))
 
     # регистрация обработчиков
     register_handlers_common(dp)
@@ -69,6 +67,6 @@ async def on_startup(dp):
     await set_commands(dp)
 
 
+
 if __name__ == '__main__':
-    user_schedule = Schedule()
     executor.start_polling(dp, on_startup=on_startup, skip_updates=True)
