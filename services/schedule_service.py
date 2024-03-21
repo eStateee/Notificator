@@ -1,17 +1,20 @@
 from datetime import datetime
 import pytz
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from handlers.get_tasks import display_scheduled_tasks
+from handlers.display_tasks import display_scheduled_tasks
 from config import SCHEDULE_LIST
 from services.user_service import get_all_users
 
 
 async def repair_all_users_schedule(session, message, bot):
     users = await get_all_users(session)
-    for i in users:  # i = [(user_id, timezone, alarm_time)]
+    for i in users:  # i = [(user_id, timezone, alarm_time, is_active)]
         temp_schedule = Schedule()
         temp_schedule.set_user_settings(timezone=i[1], user_id=i[0])
         temp_schedule.setup_and_start_schedule(alarm_time=i[2], message=message, session=session, bot=bot)
+        is_active = i[3]
+        if not is_active:
+            temp_schedule.scheduler.pause()
         SCHEDULE_LIST[int(i[0])] = temp_schedule
     return True
 
@@ -38,8 +41,7 @@ class Schedule:
         self.scheduler.add_job(display_scheduled_tasks, trigger='cron', hour=hour,
                                minute=minute, id=str(self.user_id),
                                start_date=datetime.now(tz=pytz.timezone(self.timezone)),
-                               kwargs={'message': message, 'session': session, 'job_id': self.user_id,'bot':bot})
-
+                               kwargs={'message': message, 'session': session, 'job_id': self.user_id, 'bot': bot})
         self.scheduler.start()
 
     def update_user_schedule(self, alarm_time):

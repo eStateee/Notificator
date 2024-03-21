@@ -10,6 +10,7 @@ class User(Base):
     alarm_time = Column(String, nullable=False)
     timezone = Column(String, nullable=True)
     tasks = relationship('Task', back_populates='user')
+    is_active = Column(Boolean, default=True)
 
 
 class Task(Base):

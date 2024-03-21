@@ -2,6 +2,7 @@ import re
 
 from db.models import User
 from sqlalchemy import select, update
+from config import SCHEDULE_LIST
 
 
 async def get_user_by_id(user_id, session) -> User:
@@ -24,8 +25,25 @@ def check_user_input_time(time):
         return False
     return True
 
+
 async def get_all_users(session):
     async with session() as s:
-        query = await s.execute(select(User.id, User.timezone, User.alarm_time))
+        query = await s.execute(select(User.id, User.timezone, User.alarm_time, User.is_active))
         users = query.fetchall()
     return users
+
+
+async def change_user_alarm_status(user_id, session):
+    async with session() as s:
+        query = await s.execute(select(User.is_active).where(User.id == user_id))
+        current_user_is_active_status = query.scalar()
+        opposite_is_active = not current_user_is_active_status
+        await s.execute(update(User).where(User.id == user_id).values(is_active=opposite_is_active))
+        await s.commit()
+
+    user_schedule = SCHEDULE_LIST[user_id]
+    if current_user_is_active_status:
+        user_schedule.scheduler.pause()
+    else:
+        user_schedule.scheduler.resume()
+    return opposite_is_active

@@ -11,10 +11,11 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from handlers.common import register_handlers_common
 
 from handlers.add_task import register_handlers_task_add
-from handlers.get_tasks import register_handlers_get_tasks
+from handlers.display_tasks import register_handlers_get_tasks
 from handlers.remove_task import register_handlers_remove_tasks
-from handlers.user_settings import register_handlers_settings
-
+from handlers.update_user_settings import register_handlers_settings
+from handlers.register_user import register_handlers_user_auth
+from handlers.user_info import register_handlers_user_info
 from config import COMMANDS
 
 from db.models import init_database, drop_database
@@ -59,6 +60,8 @@ async def on_startup(dp):
 
     # регистрация обработчиков
     register_handlers_common(dp)
+    register_handlers_user_auth(dp)
+    register_handlers_user_info(dp)
     register_handlers_task_add(dp)
     register_handlers_settings(dp)
     register_handlers_get_tasks(dp)
