@@ -1,11 +1,12 @@
 from aiogram.dispatcher import FSMContext
 from aiogram.types import Message, ReplyKeyboardRemove
-from keyboards.common_keybaords import get_register_inline_keyboard, location_kb
+from keyboards.common_keybaords import get_register_inline_keyboard
+from services.schedule_service import repair_all_users_schedule
+
 from services.user_service import get_user_by_id
 from config import COMMANDS
 from keyboards.common_keybaords import get_main_keyboard
 
-from aiogram.types import ReplyKeyboardMarkup
 
 async def start(message: Message, state: FSMContext, session):
     await state.finish()
@@ -26,7 +27,13 @@ async def cancel(message: Message, state: FSMContext):
     await message.answer("Действие отменено", reply_markup=ReplyKeyboardRemove())
 
 
+async def repair_schedule(message: Message, session, bot):
+    status = await repair_all_users_schedule(session=session, message=message, bot=bot)
+    await message.answer(status)
+
+
 # общая ф-ция для регистрации всех common обработчиков
 def register_handlers_common(dp):
     dp.register_message_handler(start, commands="start", state="*", )
     dp.register_message_handler(cancel, commands="cancel", state="*")
+    dp.register_message_handler(repair_schedule, commands='adminrepair', state="*")

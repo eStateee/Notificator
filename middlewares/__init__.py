@@ -1,6 +1,6 @@
 from .db import DbSessionMiddleware
-from .schedule import ScheduleMiddleware
+from .bot import BotMiddleware
 __all__ = [
     "DbSessionMiddleware",
-    "ScheduleMiddleware"
+    "BotMiddleware",
 ]

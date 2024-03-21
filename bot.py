@@ -11,17 +11,16 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from handlers.common import register_handlers_common
 
 from handlers.add_task import register_handlers_task_add
-from handlers.get_tasks import register_handlers_get_tasks
+from handlers.display_tasks import register_handlers_get_tasks
 from handlers.remove_task import register_handlers_remove_tasks
-from handlers.user_settings import register_handlers_settings
-
+from handlers.update_user_settings import register_handlers_settings
+from handlers.register_user import register_handlers_user_auth
+from handlers.user_info import register_handlers_user_info
 from config import COMMANDS
 
 from db.models import init_database, drop_database
 from middlewares.db import DbSessionMiddleware
-from middlewares.schedule import ScheduleMiddleware
-
-from services.schedule_service import Schedule
+from middlewares.bot import BotMiddleware
 
 
 load_dotenv()
@@ -32,7 +31,6 @@ storage = MemoryStorage()
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot, storage=storage)
 logger = logging.getLogger(__name__)
-
 
 # Регистрация команд для отображения в меню телеграмма
 async def set_commands(dp):
@@ -56,11 +54,14 @@ async def on_startup(dp):
     async_session = async_sessionmaker(
         engine, expire_on_commit=False,
     )
+
     dp.middleware.setup(DbSessionMiddleware(session_pool=async_session))
-    dp.middleware.setup(ScheduleMiddleware())
+    dp.middleware.setup(BotMiddleware(bot=bot))
 
     # регистрация обработчиков
     register_handlers_common(dp)
+    register_handlers_user_auth(dp)
+    register_handlers_user_info(dp)
     register_handlers_task_add(dp)
     register_handlers_settings(dp)
     register_handlers_get_tasks(dp)
@@ -69,6 +70,6 @@ async def on_startup(dp):
     await set_commands(dp)
 
 
+
 if __name__ == '__main__':
-    user_schedule = Schedule()
     executor.start_polling(dp, on_startup=on_startup, skip_updates=True)
